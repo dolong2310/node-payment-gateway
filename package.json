@@ -1,0 +1,94 @@
+{
+  "name": "@longdoo/node-payment-gateway",
+  "version": "1.1.0",
+  "description": "VN payment gateway library for Node.js",
+  "license": "MIT",
+  "author": "LongDo",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./core": {
+      "import": {
+        "types": "./dist/core.d.ts",
+        "default": "./dist/core.js"
+      },
+      "require": {
+        "types": "./dist/core.d.cts",
+        "default": "./dist/core.cjs"
+      }
+    },
+    "./momo": {
+      "import": {
+        "types": "./dist/momo.d.ts",
+        "default": "./dist/momo.js"
+      },
+      "require": {
+        "types": "./dist/momo.d.cts",
+        "default": "./dist/momo.cjs"
+      }
+    },
+    "./vnpay": {
+      "import": {
+        "types": "./dist/vnpay.d.ts",
+        "default": "./dist/vnpay.js"
+      },
+      "require": {
+        "types": "./dist/vnpay.d.cts",
+        "default": "./dist/vnpay.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.19"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "vnpay",
+    "momo",
+    "payment",
+    "payment-gateway",
+    "vietnam",
+    "vietnam-payments",
+    "nodejs",
+    "typescript"
+  ],
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  }
+}
