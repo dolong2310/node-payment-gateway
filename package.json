@@ -1,9 +1,17 @@
 {
   "name": "@longdoo/node-payment-gateway",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "VN payment gateway library for Node.js",
   "license": "MIT",
   "author": "LongDo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dolong2310/node-payment-gateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dolong2310/node-payment-gateway/issues"
+  },
+  "homepage": "https://github.com/dolong2310/node-payment-gateway#readme",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
