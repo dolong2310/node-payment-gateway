@@ -17,9 +17,11 @@ Runtime requirement: Node.js 18 or newer is recommended because the package uses
 ## Exports
 
 ```ts
-import { PaymentFactory, EnumPaymentMethod } from '@longdoo/node-payment-gateway';
-import { VNPay } from '@longdoo/node-payment-gateway/vnpay';
-import { Momo } from '@longdoo/node-payment-gateway/momo';
+import { PaymentFactory, EnumPaymentMethod, VNPay, Momo } from '@longdoo/node-payment-gateway';
+
+// Or use a subpath for the full provider API (constants, utils, all types):
+// import { VNPay } from '@longdoo/node-payment-gateway/vnpay';
+// import { Momo } from '@longdoo/node-payment-gateway/momo';
 ```
 
 The package publishes both ESM and CommonJS builds, plus TypeScript declarations.
