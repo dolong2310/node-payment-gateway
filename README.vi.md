@@ -2,9 +2,9 @@
 
 [English](README.md) | Tiếng Việt
 
-Thư viện `payment gateway` Việt Nam cho Node.js và TypeScript. Hiện tại package hỗ trợ VNPay và MoMo, bao gồm các helper để tạo `payment URL`, verify `Return URL`/`IPN callback`, query trạng thái transaction, refund transaction, lấy bank list và logging payment operation.
+Thư viện `payment gateway` Việt Nam cho Node.js và TypeScript. Hiện tại package hỗ trợ VNPay, MoMo và ZaloPay, bao gồm các helper để tạo `payment URL`, verify `Return URL`/`IPN callback`, query trạng thái transaction, refund transaction, lấy bank list và logging payment operation.
 
-Package này không phải official SDK của VNPay hoặc MoMo. Khi nhận callback, bạn vẫn cần tự validate order, amount, transaction status và business state trong system của bạn trước khi confirm payment.
+Package này không phải official SDK của VNPay, MoMo hoặc ZaloPay. Khi nhận callback, bạn vẫn cần tự validate order, amount, transaction status và business state trong system của bạn trước khi confirm payment.
 
 ## Cài đặt
 
@@ -17,11 +17,12 @@ Runtime nên dùng Node.js 18 trở lên vì package sử dụng built-in `fetch
 ## Import
 
 ```ts
-import { PaymentFactory, EnumPaymentMethod, VNPay, Momo } from '@longdoo/node-payment-gateway';
+import { PaymentFactory, EnumPaymentMethod, VNPay, Momo, ZaloPay } from '@longdoo/node-payment-gateway';
 
 // Or use a subpath for the full provider API (constants, utils, all types):
 // import { VNPay } from '@longdoo/node-payment-gateway/vnpay';
 // import { Momo } from '@longdoo/node-payment-gateway/momo';
+// import { ZaloPay } from '@longdoo/node-payment-gateway/zalopay';
 ```
 
 Package publish cả ESM, CommonJS và TypeScript declarations.
@@ -154,6 +155,111 @@ if (ipnResult.isVerified && ipnResult.isSuccess) {
 }
 ```
 
+## Dùng nhanh ZaloPay
+
+```ts
+import { ZaloPay } from '@longdoo/node-payment-gateway/zalopay';
+
+const zalopay = new ZaloPay({
+  appId: process.env.ZALOPAY_APP_ID!,
+  key1: process.env.ZALOPAY_KEY1!,
+  key2: process.env.ZALOPAY_KEY2!,
+  callbackUrl: 'https://example.com/payment/zalopay-callback', // optional, mặc định cho mọi order
+  testMode: true,
+});
+
+const order = await zalopay.createOrder({
+  appTransId: 'ORDER_1001', // được gửi thành `yymmdd_ORDER_1001` (giờ Việt Nam)
+  amount: 100000,
+  description: 'Thanh toan don hang ORDER_1001',
+  appUser: 'user_123',
+  redirectUrl: 'https://example.com/payment/zalopay-return',
+  items: [{ id: 'SKU_1', name: 'Ao thun', price: 100000, quantity: 1 }],
+});
+
+if (order.isSuccess) {
+  // Lưu order.app_trans_id, sau đó redirect khách hàng tới order.order_url
+}
+
+// Hoặc chỉ lấy payment URL (throw Error nếu ZaloPay từ chối tạo order):
+const paymentUrl = await zalopay.buildPaymentUrl({ amount: 100000, description: 'Thanh toan don hang' });
+```
+
+Lưu ý với ZaloPay:
+
+- `app_trans_id` bắt buộc dạng `yymmdd_xxx` theo giờ Việt Nam (GMT+7). Thư viện tự thêm prefix nếu thiếu và tự sinh nếu không truyền `appTransId`. Luôn lưu lại `order.app_trans_id`.
+- `amount` truyền theo đơn vị VND bình thường.
+- `embedData` và `items` truyền object; thư viện tự stringify và ký đúng chuỗi đó. `redirectUrl` được gộp vào `embed_data.redirecturl`.
+- `key1` dùng ký request gọi API, `key2` dùng verify callback và checksum redirect.
+- `testMode: true` dùng `sb-openapi.zalopay.vn`, ngược lại dùng `openapi.zalopay.vn`.
+
+## Verify ZaloPay Redirect
+
+```ts
+import type { ReturnQueryFromZaloPay } from '@longdoo/node-payment-gateway/zalopay';
+
+const result = zalopay.verifyReturnUrl(req.query as unknown as ReturnQueryFromZaloPay);
+
+if (result.isVerified && result.isSuccess) {
+  // Chỉ hiển thị trang kết quả. Cập nhật order dựa trên callback (hoặc queryDr).
+}
+```
+
+## Xử lý ZaloPay Callback
+
+ZaloPay gửi `POST` JSON `{ data, mac, type }` tới `callbackUrl`, chỉ khi thanh toán thành công.
+
+```ts
+import {
+  IpnAlreadyConfirmed,
+  IpnFailChecksum,
+  IpnSuccess,
+  IpnUnknownError,
+  type ZaloPayCallbackBody,
+} from '@longdoo/node-payment-gateway/zalopay';
+
+app.post('/payment/zalopay-callback', express.json(), async (req, res) => {
+  try {
+    const result = zalopay.verifyIpnCall(req.body as ZaloPayCallbackBody);
+
+    if (!result.isVerified) {
+      return res.json(IpnFailChecksum); // ZaloPay sẽ không callback lại
+    }
+
+    const order = await findOrderByAppTransId(result.app_trans_id);
+    if (order.status === 'paid') {
+      return res.json(IpnAlreadyConfirmed);
+    }
+
+    await markOrderAsPaid(order.id, { zpTransId: result.zp_trans_id, amount: result.amount });
+    return res.json(IpnSuccess);
+  } catch {
+    return res.json(IpnUnknownError); // ZaloPay sẽ callback lại (tối đa 3 lần)
+  }
+});
+```
+
+Nếu không nhận được callback, gọi `queryDr` định kỳ (khoảng 1 phút/lần) cho tới khi order hết hạn:
+
+```ts
+const status = await zalopay.queryDr({ app_trans_id: '250210_ORDER_1001' });
+// status.isSuccess -> đã thanh toán, status.isProcessing -> đang chờ, còn lại -> thất bại
+```
+
+## Hoàn tiền ZaloPay
+
+Refund là bất đồng bộ: gọi `refund`, lưu `m_refund_id`, sau đó kiểm tra bằng `queryRefund`.
+
+```ts
+const refund = await zalopay.refund({
+  zp_trans_id: '250210000000123',
+  amount: 50000,
+  description: 'Hoan tien ORDER_1001',
+});
+
+const refundStatus = await zalopay.queryRefund({ m_refund_id: refund.m_refund_id });
+```
+
 ## PaymentFactory
 
 Dùng `PaymentFactory` khi bạn muốn chọn provider động nhưng giữ cùng method surface.
@@ -178,7 +284,7 @@ const paymentUrl = await gateway.buildPaymentUrl({
 
 ## API khác
 
-Cả `VNPay` và `Momo` đều expose:
+`VNPay`, `Momo` và `ZaloPay` đều expose:
 
 - `buildPaymentUrl(data, options?)`
 - `verifyReturnUrl(query, options?)`
@@ -186,6 +292,8 @@ Cả `VNPay` và `Momo` đều expose:
 - `queryDr(query, options?)`
 - `refund(data, options?)`
 - `getBankList()`
+
+`ZaloPay` có thêm `createOrder(data, options?)` (trả về full response gồm `order_url`, `zp_trans_token`, `qr_code`) và `queryRefund(query, options?)`. `verifyIpnCall` của ZaloPay nhận callback body `{ data, mac, type }`.
 
 ## Logging
 

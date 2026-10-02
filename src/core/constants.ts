@@ -5,6 +5,7 @@ export const EnumPaymentMethod = {
   // BANK: 'bank',
   VNPAY: 'vnpay',
   MOMO: 'momo',
+  ZALOPAY: 'zalopay',
 } as const;
 
 export type PaymentMethod = (typeof EnumPaymentMethod)[keyof typeof EnumPaymentMethod];

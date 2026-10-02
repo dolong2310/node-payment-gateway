@@ -1,5 +1,6 @@
 import type * as MomoTypes from '../momo/types';
 import type * as VNPayTypes from '../vnpay/types';
+import type * as ZaloPayTypes from '../zalopay/types';
 import { EnumPaymentMethod, type PaymentMethod } from './constants';
 
 // ─── Interface ────────────────────────────────────────────────────────────────
@@ -49,6 +50,23 @@ export interface PaymentProviderRegistry {
     RefundInput: VNPayTypes.Refund;
     RefundResult: VNPayTypes.RefundResponse;
     RefundOptions: VNPayTypes.RefundOptions<keyof VNPayTypes.RefundResponseLogger>;
+  };
+  [EnumPaymentMethod.ZALOPAY]: {
+    Config: ZaloPayTypes.ZaloPayConfig;
+    BuildPaymentUrlInput: ZaloPayTypes.BuildPaymentUrl;
+    BuildPaymentUrlOptions: ZaloPayTypes.BuildPaymentUrlOptions<keyof ZaloPayTypes.BuildPaymentUrlLogger>;
+    VerifyReturnUrlInput: ZaloPayTypes.ReturnQueryFromZaloPay;
+    VerifyReturnUrlResult: ZaloPayTypes.VerifyReturnUrl;
+    VerifyReturnUrlOptions: ZaloPayTypes.VerifyReturnUrlOptions<keyof ZaloPayTypes.VerifyReturnUrlLogger>;
+    VerifyIpnCallInput: ZaloPayTypes.ZaloPayCallbackBody;
+    VerifyIpnCallResult: ZaloPayTypes.VerifyIpnCall;
+    VerifyIpnCallOptions: ZaloPayTypes.VerifyIpnCallOptions<keyof ZaloPayTypes.VerifyIpnCallLogger>;
+    QueryDrInput: ZaloPayTypes.QueryDr;
+    QueryDrResult: ZaloPayTypes.QueryDrResponse;
+    QueryDrOptions: ZaloPayTypes.QueryDrResponseOptions<keyof ZaloPayTypes.QueryDrResponseLogger>;
+    RefundInput: ZaloPayTypes.Refund;
+    RefundResult: ZaloPayTypes.RefundResponse;
+    RefundOptions: ZaloPayTypes.RefundOptions<keyof ZaloPayTypes.RefundResponseLogger>;
   };
 }
 

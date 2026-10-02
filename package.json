@@ -1,7 +1,7 @@
 {
   "name": "@longdoo/node-payment-gateway",
-  "version": "2.0.0",
-  "description": "VN payment gateway library for Node.js",
+  "version": "2.1.0",
+  "description": "VN payment gateway library for Node.js (VNPay, MoMo, ZaloPay)",
   "license": "MIT",
   "author": "LongDo",
   "repository": {
@@ -57,6 +57,16 @@
         "types": "./dist/vnpay.d.cts",
         "default": "./dist/vnpay.cjs"
       }
+    },
+    "./zalopay": {
+      "import": {
+        "types": "./dist/zalopay.d.ts",
+        "default": "./dist/zalopay.js"
+      },
+      "require": {
+        "types": "./dist/zalopay.d.cts",
+        "default": "./dist/zalopay.cjs"
+      }
     }
   },
   "files": [
@@ -84,6 +94,7 @@
   "keywords": [
     "vnpay",
     "momo",
+    "zalopay",
     "payment",
     "payment-gateway",
     "vietnam",

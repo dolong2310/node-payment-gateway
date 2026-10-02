@@ -1,5 +1,6 @@
 import { Momo } from '../momo';
 import { VNPay } from '../vnpay';
+import { ZaloPay } from '../zalopay';
 import { EnumPaymentMethod, PaymentMethod } from './constants';
 import {
   BuildPaymentUrlInputMap,
@@ -23,6 +24,7 @@ import {
 const PROVIDER_FACTORIES = {
   [EnumPaymentMethod.VNPAY]: (config: PaymentConfigMap[typeof EnumPaymentMethod.VNPAY]) => new VNPay(config),
   [EnumPaymentMethod.MOMO]: (config: PaymentConfigMap[typeof EnumPaymentMethod.MOMO]) => new Momo(config),
+  [EnumPaymentMethod.ZALOPAY]: (config: PaymentConfigMap[typeof EnumPaymentMethod.ZALOPAY]) => new ZaloPay(config),
 };
 
 export class PaymentFactory<T extends PaymentMethod = PaymentMethod> {

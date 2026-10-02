@@ -6,6 +6,7 @@ export default defineConfig({
     core: "src/core/index.ts",
     momo: "src/momo/index.ts",
     vnpay: "src/vnpay/index.ts",
+    zalopay: "src/zalopay/index.ts",
   },
   format: ["cjs", "esm"],
   dts: true,
